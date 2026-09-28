@@ -17,6 +17,7 @@ import {
   ImageIcon,
   Eye,
   Upload,
+  Layers,
 } from "lucide-react";
 import { useState, useEffect, useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
@@ -35,8 +36,7 @@ const initialProductForm = {
   description: "",
   price: "",
   image: "",
-  availableSizes: [],
-  availableColors: "",
+  variants: [],
   category: "",
   quantity: "0",
   createdAt: "",
@@ -98,7 +98,6 @@ export default function ProductsManagement() {
           totalOutOfStock: 0,
         },
     );
-  console.log("the products from store are ", productsFromStore);
 
   const products = useMemo(
     () =>
@@ -107,12 +106,11 @@ export default function ProductsManagement() {
         name: product.name,
         category: product.category,
         description: product.description,
-        availableSizes: product.availableSizes,
-        availableColors: product.availableColors,
+        variants: product.variants,
         price: `${Number(product.price).toFixed(2)} DZD`,
         createdAt: product.createdAt,
         updatedAt: product.updatedAt,
-        stock: product.quantity,
+        stock: product.totalQuantity,
         status:
           product.quantity === 0
             ? "Out Of Stock"
@@ -217,10 +215,7 @@ export default function ProductsManagement() {
         .replace("DZD", "")
         .trim(),
       image: product.image?.startsWith("http") ? product.image : "",
-      availableSizes: product.availableSizes || [],
-      availableColors: Array.isArray(product.availableColors)
-        ? product.availableColors.join(", ")
-        : "",
+      variants: product.variants || [],
       category: product.category || "",
       quantity: String(product.stock ?? 0),
     });
@@ -236,44 +231,18 @@ export default function ProductsManagement() {
     setEditForm((currentForm) => ({ ...currentForm, [name]: value }));
   };
 
-  const handleEditSizeChange = (size) => {
-    setEditForm((currentForm) => ({
-      ...currentForm,
-      availableSizes: currentForm.availableSizes.includes(size)
-        ? currentForm.availableSizes.filter(
-            (currentSize) => currentSize !== size,
-          )
-        : [...currentForm.availableSizes, size],
-    }));
-  };
-
   const handleFormChange = (event) => {
     const { name, value } = event.target;
     setProductForm((currentForm) => ({ ...currentForm, [name]: value }));
-  };
-
-  const handleSizeChange = (size) => {
-    setProductForm((currentForm) => ({
-      ...currentForm,
-      availableSizes: currentForm.availableSizes.includes(size)
-        ? currentForm.availableSizes.filter(
-            (currentSize) => currentSize !== size,
-          )
-        : [...currentForm.availableSizes, size],
-    }));
   };
 
   // handleAddProduct function to handle adding a new product
 
   const handleAddProduct = async (event) => {
     event.preventDefault();
-    const colors = productForm.availableColors
-      .split(",")
-      .map((color) => color.trim())
-      .filter(Boolean);
 
-    if (productForm.availableSizes.length === 0 || colors.length === 0) {
-      setFormError("Select at least one size and enter at least one color.");
+    if (productForm.variants.length === 0) {
+      setFormError("Select at least one variant.");
       return;
     }
 
@@ -289,14 +258,10 @@ export default function ProductsManagement() {
       formData.append("description", productForm.description.trim());
     }
     formData.append("price", productForm.price);
-    formData.append(
-      "availableSizes",
-      JSON.stringify(productForm.availableSizes),
-    );
-    formData.append("availableColors", JSON.stringify(colors));
+    formData.append("variants", JSON.stringify(productForm.variants));
     formData.append("category", productForm.category.trim());
     formData.append("quantity", productForm.quantity);
-    console.log("the form data is ", Object.fromEntries(formData));
+    console.log("the formdata is ", Object.fromEntries(formData.entries()));
 
     try {
       await dispatch(addProduct(formData)).unwrap();
@@ -340,18 +305,15 @@ export default function ProductsManagement() {
 
   const handleSaveEdit = async (event) => {
     event.preventDefault();
-    const colors = editForm.availableColors
-      .split(",")
-      .map((color) => color.trim())
-      .filter(Boolean);
 
-    if (editForm.availableSizes.length === 0 || colors.length === 0) {
+    if (editForm.variants.length === 0) {
       setActionFeedback({
         type: "error",
-        message: "Unable to save changes: add at least one size and color.",
+        message: "Unable to save changes: add at least one variant.",
       });
       return;
     }
+    console.log("the edit form is ", editForm);
     const formdata = new FormData();
     if (editImageFile) {
       formdata.append("image", editImageFile);
@@ -361,10 +323,10 @@ export default function ProductsManagement() {
       formdata.append("description", editForm.description.trim());
     }
     formdata.append("price", editForm.price);
-    formdata.append("availableSizes", JSON.stringify(editForm.availableSizes));
-    formdata.append("availableColors", JSON.stringify(colors));
+    formdata.append("variants", JSON.stringify(editForm.variants));
     formdata.append("category", editForm.category.trim());
     formdata.append("quantity", editForm.quantity);
+    console.log("the formdata is ", Object.fromEntries(formdata.entries()));
     try {
       await dispatch(
         editProduct({
@@ -458,12 +420,13 @@ export default function ProductsManagement() {
 
       {/* Add Product Form */}
       {showAddForm && (
-        <div className="bg-primary border border-footer/10 rounded-xl p-6">
+        <div className="bg-primary border border-footer/10 rounded-xl p-6 shadow-sm">
           <h3 className="text-xl font-heading font-bold text-footer mb-4">
             Add New Product
           </h3>
-          <form onSubmit={handleAddProduct} className="space-y-4">
+          <form onSubmit={handleAddProduct} className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Product Name */}
               <input
                 name="name"
                 type="text"
@@ -473,14 +436,16 @@ export default function ProductsManagement() {
                 minLength={2}
                 maxLength={100}
                 required
-                className="px-4 py-2 bg-hero border border-footer/10 rounded-lg text-footer placeholder-footer/40 focus:outline-none focus:ring-2 focus:ring-accent"
+                className="px-4 py-2.5 bg-hero border border-footer/10 rounded-lg text-footer placeholder-footer/40 focus:outline-none focus:ring-2 focus:ring-accent"
               />
+
+              {/* Category */}
               <select
                 name="category"
                 value={productForm.category}
                 onChange={handleFormChange}
                 required
-                className="px-4 py-2 bg-hero border border-footer/10 rounded-lg text-footer"
+                className="px-4 py-2.5 bg-hero border border-footer/10 rounded-lg text-footer focus:outline-none focus:ring-2 focus:ring-accent"
               >
                 <option value="" disabled>
                   Select Category
@@ -491,6 +456,8 @@ export default function ProductsManagement() {
                   </option>
                 ))}
               </select>
+
+              {/* Price */}
               <input
                 name="price"
                 type="number"
@@ -500,18 +467,27 @@ export default function ProductsManagement() {
                 min="0"
                 step="0.01"
                 required
-                className="px-4 py-2 bg-hero border border-footer/10 rounded-lg text-footer placeholder-footer/40 focus:outline-none focus:ring-2 focus:ring-accent"
+                className="px-4 py-2.5 bg-hero border border-footer/10 rounded-lg text-footer placeholder-footer/40 focus:outline-none focus:ring-2 focus:ring-accent"
               />
-              <input
-                name="quantity"
-                type="number"
-                placeholder="Quantity"
-                value={productForm.quantity}
-                onChange={handleFormChange}
-                min="0"
-                required
-                className="px-4 py-2 bg-hero border border-footer/10 rounded-lg text-footer placeholder-footer/40 focus:outline-none focus:ring-2 focus:ring-accent"
-              />
+
+              {/* Total Stock Auto-Calculated Readonly */}
+              <div className="flex items-center gap-3 px-4 py-2.5 bg-hero/50 border border-footer/10 rounded-lg">
+                <Package className="w-5 h-5 text-accent shrink-0" />
+                <div className="flex-1">
+                  <span className="text-xs text-footer/50 block leading-none">
+                    Total Stock
+                  </span>
+                  <span className="text-sm font-bold text-footer">
+                    {productForm.variants.reduce(
+                      (sum, item) => sum + (Number(item.quantity) || 0),
+                      0,
+                    )}{" "}
+                    Units
+                  </span>
+                </div>
+              </div>
+
+              {/* Description */}
               <textarea
                 name="description"
                 placeholder="Description (optional)"
@@ -519,8 +495,9 @@ export default function ProductsManagement() {
                 onChange={handleFormChange}
                 minLength={2}
                 maxLength={1000}
-                className="md:col-span-2 min-h-24 px-4 py-2 bg-hero border border-footer/10 rounded-lg text-footer placeholder-footer/40 focus:outline-none focus:ring-2 focus:ring-accent"
+                className="md:col-span-2 min-h-24 px-4 py-2.5 bg-hero border border-footer/10 rounded-lg text-footer placeholder-footer/40 focus:outline-none focus:ring-2 focus:ring-accent"
               />
+
               {/* Image Upload */}
               <div className="md:col-span-2">
                 <label className="mb-2 block text-sm font-medium text-footer">
@@ -540,7 +517,7 @@ export default function ProductsManagement() {
                       type="button"
                       onClick={handleDeleteImage}
                       aria-label="Remove image"
-                      className="absolute -right-2 -top-2 flex h-7 w-7 items-center justify-center rounded-full bg-footer text-primary shadow-sm hover:bg-red-600 transition-colors"
+                      className="absolute -right-2 -top-2 flex h-7 w-7 items-center justify-center rounded-full bg-footer text-primary shadow-sm hover:bg-red-600 transition-colors cursor-pointer"
                     >
                       <X className="h-4 w-4" />
                     </button>
@@ -570,49 +547,159 @@ export default function ProductsManagement() {
                   </label>
                 )}
               </div>
-              <div className="md:col-span-2">
-                <p className="mb-2 text-sm font-medium text-footer">
-                  Available sizes
-                </p>
-                <div className="flex flex-wrap gap-3">
-                  {availableSizeOptions.map((size) => (
-                    <label
-                      key={size}
-                      className="flex items-center gap-2 text-sm text-footer"
+
+              {/* Product Variants (quantityPerSizeColor) */}
+              <div className="md:col-span-2 space-y-3 p-4 bg-hero/40 rounded-xl border border-footer/10">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Layers className="w-4 h-4 text-accent" />
+                    <h4 className="text-sm font-bold text-footer">
+                      Product Variants (Size, Color & Stock)
+                    </h4>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setProductForm({
+                        ...productForm,
+                        variants: [
+                          ...productForm.variants,
+                          { size: "", color: "", quantity: null },
+                        ],
+                      });
+                    }}
+                    className="flex items-center gap-1 text-xs font-semibold text-accent hover:underline cursor-pointer"
+                  >
+                    <Plus className="w-3.5 h-3.5" /> Add Variant
+                  </button>
+                </div>
+
+                <div className="space-y-2">
+                  {productForm.variants.map((variant, idx) => (
+                    <div
+                      key={idx}
+                      className="grid grid-cols-12 gap-2 items-center bg-primary p-2.5 rounded-lg border border-footer/10"
                     >
-                      <input
-                        type="checkbox"
-                        checked={productForm.availableSizes.includes(size)}
-                        onChange={() => handleSizeChange(size)}
-                        className="accent-accent"
-                      />
-                      {size}
-                    </label>
+                      {/* Size Selector/Input */}
+                      <div className="col-span-4 sm:col-span-3">
+                        <select
+                          value={variant.size}
+                          onChange={(e) => {
+                            const updated = [...productForm.variants];
+                            updated[idx] = {
+                              ...updated[idx],
+                              size: e.target.value,
+                            };
+                            setProductForm({
+                              ...productForm,
+                              variants: updated,
+                            });
+                          }}
+                          className="w-full px-3 py-1.5 bg-hero border border-footer/10 rounded-md text-xs text-footer focus:outline-none focus:ring-1 focus:ring-accent"
+                          required
+                        >
+                          <option value="" disabled>
+                            Select Size
+                          </option>
+                          {availableSizeOptions.map((sz) => (
+                            <option key={sz} value={sz}>
+                              {sz}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+
+                      {/* Color Input with Visual Badge */}
+                      <div className="col-span-4 sm:col-span-4 flex items-center gap-1.5">
+                        <span
+                          className="w-4 h-4 rounded-full border border-footer/20 shrink-0"
+                          style={{
+                            backgroundColor:
+                              variant.color.toLowerCase() || "#ccc",
+                          }}
+                        />
+                        <input
+                          type="text"
+                          placeholder="Color (e.g., Red, #FF0000)"
+                          value={variant.color}
+                          onChange={(e) => {
+                            const updated = [...productForm.variants];
+                            updated[idx] = {
+                              ...updated[idx],
+                              color: e.target.value,
+                            };
+                            setProductForm({
+                              ...productForm,
+                              variants: updated,
+                            });
+                          }}
+                          className="w-full px-3 py-1.5 bg-hero border border-footer/10 rounded-md text-xs text-footer placeholder-footer/40 focus:outline-none focus:ring-1 focus:ring-accent"
+                          required
+                        />
+                      </div>
+
+                      {/* Quantity Input */}
+                      <div className="col-span-3 sm:col-span-4">
+                        <input
+                          type="number"
+                          placeholder="Qty"
+                          min="0"
+                          value={variant.quantity}
+                          onChange={(e) => {
+                            const updated = [...productForm.variants];
+                            updated[idx] = {
+                              ...updated[idx],
+                              quantity: parseInt(e.target.value, 10),
+                            };
+                            setProductForm({
+                              ...productForm,
+                              variants: updated,
+                            });
+                          }}
+                          className="w-full px-3 py-1.5 bg-hero border border-footer/10 rounded-md text-xs text-footer focus:outline-none focus:ring-1 focus:ring-accent"
+                          required
+                        />
+                      </div>
+
+                      {/* Delete Variant */}
+                      <div className="col-span-1 flex justify-center">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const updated = productForm.variants.filter(
+                              (_, i) => i !== idx,
+                            );
+                            setProductForm({
+                              ...productForm,
+                              variants: updated,
+                            });
+                          }}
+                          disabled={productForm.variants.length <= 1}
+                          className="text-footer/40 hover:text-red-600 disabled:opacity-20 cursor-pointer transition-colors"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </div>
                   ))}
                 </div>
               </div>
-              <input
-                name="availableColors"
-                type="text"
-                placeholder="Available colors (comma-separated)"
-                value={productForm.availableColors}
-                onChange={handleFormChange}
-                className="md:col-span-2 px-4 py-2 bg-hero border border-footer/10 rounded-lg text-footer placeholder-footer/40 focus:outline-none focus:ring-2 focus:ring-accent"
-              />
             </div>
+
             {formError && <p className="text-sm text-red-600">{formError}</p>}
+
             <div className="flex gap-3">
               <button
                 type="submit"
                 disabled={isAddingProduct}
-                className="flex-1 px-6 py-2 bg-accent text-primary rounded-lg hover:opacity-90 transition-opacity font-medium disabled:opacity-50"
+                className="flex-1 px-6 py-2.5 bg-accent text-primary rounded-lg hover:opacity-90 transition-opacity font-medium disabled:opacity-50 cursor-pointer"
               >
                 {isAddingProduct ? "Adding..." : "Add Product"}
               </button>
               <button
                 type="button"
                 onClick={() => setShowAddForm(false)}
-                className="flex-1 px-6 py-2 bg-hero border border-footer/10 text-footer rounded-lg hover:bg-footer/5 transition-colors font-medium"
+                className="flex-1 px-6 py-2.5 bg-hero border border-footer/10 text-footer rounded-lg hover:bg-footer/5 transition-colors font-medium cursor-pointer"
               >
                 Cancel
               </button>
@@ -845,7 +932,7 @@ export default function ProductsManagement() {
               </div>
               <button
                 onClick={() => setSelectedProduct(null)}
-                className="p-1.5 text-footer/60 hover:text-footer rounded-lg transition-colors hover:bg-hero"
+                className="p-1.5 text-footer/60 hover:text-footer rounded-lg transition-colors hover:bg-hero cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -890,7 +977,7 @@ export default function ProductsManagement() {
                     {selectedProduct.stock > 0 ? (
                       <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-500/10 text-emerald-600 border border-emerald-500/20">
                         <CheckCircle2 className="w-3 h-3" />
-                        In Stock ({selectedProduct.stock})
+                        In Stock ({selectedProduct.stock} Units)
                       </span>
                     ) : (
                       <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-500/10 text-red-600 border border-red-500/20">
@@ -907,9 +994,11 @@ export default function ProductsManagement() {
                     Price
                   </p>
                   <p className="text-2xl font-bold text-accent">
-                    {Number(
-                      selectedProduct.price.replace("DZD", "").trim(),
-                    ).toFixed(2)}
+                    {typeof selectedProduct.price === "string"
+                      ? Number(
+                          selectedProduct.price.replace("DZD", "").trim(),
+                        ).toFixed(2)
+                      : Number(selectedProduct.price).toFixed(2)}
                     <span className="text-xs font-normal text-footer/60 ml-1">
                       DZD
                     </span>
@@ -917,66 +1006,93 @@ export default function ProductsManagement() {
                 </div>
               </div>
 
-              {/* Variants: Available Sizes & Colors */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {/* Available Sizes */}
-                <div className="p-4 bg-hero/30 rounded-xl border border-footer/5 space-y-2">
-                  <p className="text-[11px] font-semibold uppercase tracking-wider text-footer/40 flex items-center gap-1.5">
-                    <Ruler className="w-3.5 h-3.5 text-accent" />
-                    Available Sizes
-                  </p>
+              {/* Product Variants Breakdown */}
+              <div className="p-4 bg-hero/30 rounded-xl border border-footer/5 space-y-3">
+                <p className="text-[11px] font-semibold uppercase tracking-wider text-footer/40 flex items-center gap-1.5">
+                  <Layers className="w-3.5 h-3.5 text-accent" />
+                  Product Variants & Stock Breakdown
+                </p>
 
-                  {selectedProduct.availableSizes &&
-                  selectedProduct.availableSizes.length > 0 ? (
-                    <div className="flex flex-wrap gap-1.5 pt-1">
-                      {selectedProduct.availableSizes.map((size, index) => (
-                        <span
-                          key={index}
-                          className="px-2.5 py-1 bg-primary border border-footer/10 rounded-lg text-xs font-semibold text-footer shadow-xs"
-                        >
-                          {size}
-                        </span>
-                      ))}
-                    </div>
-                  ) : (
-                    <p className="text-xs text-footer/40 italic">
-                      No sizes specified
-                    </p>
-                  )}
-                </div>
-
-                {/* Available Colors */}
-                <div className="p-4 bg-hero/30 rounded-xl border border-footer/5 space-y-2">
-                  <p className="text-[11px] font-semibold uppercase tracking-wider text-footer/40 flex items-center gap-1.5">
-                    <Palette className="w-3.5 h-3.5 text-accent" />
-                    Available Colors
-                  </p>
-
-                  {selectedProduct.availableColors &&
-                  selectedProduct.availableColors.length > 0 ? (
-                    <div className="flex flex-wrap gap-1.5 pt-1">
-                      {selectedProduct.availableColors.map((color, index) => (
-                        <span
-                          key={index}
-                          className="px-2.5 py-1 bg-primary border border-footer/10 rounded-lg text-xs font-semibold text-footer shadow-xs flex items-center gap-1.5"
-                        >
+                {selectedProduct.variants &&
+                selectedProduct.variants.length > 0 ? (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    {selectedProduct.variants.map((v, idx) => (
+                      <div
+                        key={idx}
+                        className="flex items-center justify-between p-2.5 bg-primary border border-footer/10 rounded-lg text-xs"
+                      >
+                        <div className="flex items-center gap-2">
                           <span
-                            className="w-2.5 h-2.5 rounded-full border border-footer/20"
-                            style={{ backgroundColor: color.toLowerCase() }}
+                            className="w-3.5 h-3.5 rounded-full border border-footer/20 shrink-0"
+                            style={{
+                              backgroundColor: (v.color || "").toLowerCase(),
+                            }}
                           />
-                          {color}
+                          <span className="font-semibold text-footer">
+                            {v.size || "N/A"}
+                          </span>
+                          <span className="text-footer/40">•</span>
+                          <span className="text-footer/70 capitalize">
+                            {v.color || "N/A"}
+                          </span>
+                        </div>
+                        <span className="font-bold text-accent bg-accent/10 px-2 py-0.5 rounded">
+                          {v.quantity ?? 0} pcs
                         </span>
-                      ))}
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    {/* Size Fallback */}
+                    <div>
+                      <p className="text-[10px] text-footer/50 mb-1 flex items-center gap-1">
+                        <Ruler className="w-3 h-3" /> Sizes
+                      </p>
+                      <div className="flex flex-wrap gap-1">
+                        {selectedProduct.availableSizes?.map((s, i) => (
+                          <span
+                            key={i}
+                            className="px-2 py-0.5 bg-primary border border-footer/10 rounded text-xs text-footer font-medium"
+                          >
+                            {s}
+                          </span>
+                        )) || (
+                          <span className="text-xs text-footer/40 italic">
+                            None
+                          </span>
+                        )}
+                      </div>
                     </div>
-                  ) : (
-                    <p className="text-xs text-footer/40 italic">
-                      No colors specified
-                    </p>
-                  )}
-                </div>
+                    {/* Color Fallback */}
+                    <div>
+                      <p className="text-[10px] text-footer/50 mb-1 flex items-center gap-1">
+                        <Palette className="w-3 h-3" /> Colors
+                      </p>
+                      <div className="flex flex-wrap gap-1">
+                        {selectedProduct.availableColors?.map((c, i) => (
+                          <span
+                            key={i}
+                            className="px-2 py-0.5 bg-primary border border-footer/10 rounded text-xs text-footer font-medium flex items-center gap-1"
+                          >
+                            <span
+                              className="w-2 h-2 rounded-full border border-footer/20"
+                              style={{ backgroundColor: c.toLowerCase() }}
+                            />
+                            {c}
+                          </span>
+                        )) || (
+                          <span className="text-xs text-footer/40 italic">
+                            None
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
 
-              {/* Description Section (Optional if present in model) */}
+              {/* Description Section */}
               {selectedProduct.description && (
                 <div className="p-4 bg-hero/30 rounded-xl border border-footer/5 space-y-1.5">
                   <p className="text-[11px] font-semibold uppercase tracking-wider text-footer/40">
@@ -1009,7 +1125,7 @@ export default function ProductsManagement() {
             <div className="px-6 py-4 border-t border-footer/10 bg-hero/30 flex justify-end gap-2.5">
               <button
                 onClick={() => setSelectedProduct(null)}
-                className="px-4 py-2 bg-hero text-footer rounded-lg text-xs font-semibold hover:bg-footer/10 transition-colors"
+                className="px-4 py-2 bg-hero text-footer rounded-lg text-xs font-semibold hover:bg-footer/10 transition-colors cursor-pointer"
               >
                 Close
               </button>
@@ -1165,35 +1281,144 @@ export default function ProductsManagement() {
                     </div>
                   </div>
                 </div>
-                <div className="md:col-span-2">
-                  <p className="mb-2 text-sm font-medium text-footer">
-                    Available sizes
-                  </p>
-                  <div className="flex flex-wrap gap-3">
-                    {availableSizeOptions.map((size) => (
-                      <label
-                        key={size}
-                        className="flex items-center gap-2 text-sm text-footer"
+                {/* Dynamic Product Variants Section */}
+                <div className="md:col-span-2 space-y-3 p-4 bg-hero/40 rounded-xl border border-footer/10">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Layers className="w-4 h-4 text-accent" />
+                      <h4 className="text-sm font-bold text-footer">
+                        Product Variants (Size, Color & Stock)
+                      </h4>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setEditForm({
+                          ...editForm,
+                          variants: [
+                            ...(editForm.variants || []),
+                            { size: "", color: "", quantity: null },
+                          ],
+                        });
+                      }}
+                      className="flex items-center gap-1 text-xs font-semibold text-accent hover:underline cursor-pointer"
+                    >
+                      <Plus className="w-3.5 h-3.5" /> Add Variant
+                    </button>
+                  </div>
+
+                  <div className="space-y-2">
+                    {(editForm.variants || []).map((variant, idx) => (
+                      <div
+                        key={idx}
+                        className="grid grid-cols-12 gap-2 items-center bg-primary p-2.5 rounded-lg border border-footer/10"
                       >
-                        <input
-                          type="checkbox"
-                          checked={editForm.availableSizes.includes(size)}
-                          onChange={() => handleEditSizeChange(size)}
-                          className="accent-accent"
-                        />
-                        {size}
-                      </label>
+                        {/* Size Selector */}
+                        <div className="col-span-4 sm:col-span-3">
+                          <select
+                            value={variant.size}
+                            onChange={(e) => {
+                              const updated = [...editForm.variants];
+                              updated[idx] = {
+                                ...updated[idx],
+                                size: e.target.value,
+                              };
+                              console.log("Updated variants:", updated);
+                              setEditForm({
+                                ...editForm,
+                                variants: updated,
+                              });
+                              console.log("Edit form after update:", editForm);
+                            }}
+                            className="w-full px-3 py-1.5 bg-hero border border-footer/10 rounded-md text-xs text-footer focus:outline-none focus:ring-1 focus:ring-accent"
+                            required
+                          >
+                            <option value="" disabled>
+                              Select Size
+                            </option>
+                            {availableSizeOptions.map((sz) => (
+                              <option key={sz} value={sz}>
+                                {sz}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+
+                        {/* Color Input */}
+                        <div className="col-span-4 sm:col-span-4 flex items-center gap-1.5">
+                          <span
+                            className="w-4 h-4 rounded-full border border-footer/20 shrink-0"
+                            style={{
+                              backgroundColor:
+                                (variant.color || "").toLowerCase() || "#ccc",
+                            }}
+                          />
+                          <input
+                            type="text"
+                            placeholder="Color (e.g., Red, #FF0000)"
+                            value={variant.color}
+                            onChange={(e) => {
+                              const updated = [...editForm.variants];
+                              updated[idx] = {
+                                ...updated[idx],
+                                color: e.target.value,
+                              };
+                              setEditForm({
+                                ...editForm,
+                                variants: updated,
+                              });
+                            }}
+                            className="w-full px-3 py-1.5 bg-hero border border-footer/10 rounded-md text-xs text-footer placeholder-footer/40 focus:outline-none focus:ring-1 focus:ring-accent"
+                            required
+                          />
+                        </div>
+
+                        {/* Quantity Input */}
+                        <div className="col-span-3 sm:col-span-4">
+                          <input
+                            type="number"
+                            placeholder="Qty"
+                            min="0"
+                            value={variant.quantity ?? ""}
+                            onChange={(e) => {
+                              const updated = [...editForm.variants];
+                              updated[idx] = {
+                                ...updated[idx],
+                                quantity: parseInt(e.target.value, 10),
+                              };
+                              setEditForm({
+                                ...editForm,
+                                variants: updated,
+                              });
+                            }}
+                            className="w-full px-3 py-1.5 bg-hero border border-footer/10 rounded-md text-xs text-footer focus:outline-none focus:ring-1 focus:ring-accent"
+                            required
+                          />
+                        </div>
+
+                        {/* Delete Variant */}
+                        <div className="col-span-1 flex justify-center">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const updated = editForm.variants.filter(
+                                (_, i) => i !== idx,
+                              );
+                              setEditForm({
+                                ...editForm,
+                                variants: updated,
+                              });
+                            }}
+                            disabled={(editForm.variants || []).length <= 1}
+                            className="text-footer/40 hover:text-red-600 disabled:opacity-20 cursor-pointer transition-colors"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </div>
                     ))}
                   </div>
                 </div>
-                <input
-                  name="availableColors"
-                  type="text"
-                  placeholder="Available colors (comma-separated)"
-                  value={editForm.availableColors}
-                  onChange={handleEditFormChange}
-                  className="px-4 py-2 bg-hero border border-footer/10 rounded-lg text-footer placeholder-footer/40 focus:outline-none focus:ring-2 focus:ring-accent md:col-span-2"
-                />
               </div>
 
               {actionFeedback.type === "error" && (
