@@ -17,6 +17,15 @@ export default function NewArrivalsSection() {
   useEffect(() => {
     dispatch(fetchLatestProducts(6));
   }, [dispatch]);
+  const countColors = (product) => {
+    if (product.variants && product.variants.length > 0) {
+      const uniqueColors = new Set(
+        product.variants.map((variant) => variant.color),
+      );
+      return uniqueColors.size;
+    }
+    return 0;
+  };
 
   return (
     <section
@@ -109,9 +118,9 @@ export default function NewArrivalsSection() {
                     <span className="text-sm font-semibold text-footer">
                       {currency(product.price)}
                     </span>
-                    {product.availableColors?.length > 0 && (
+                    {countColors(product) > 0 && (
                       <span className="text-[10px] text-footer/40 uppercase tracking-wider">
-                        {product.availableColors.length} colors
+                        {countColors(product)} colors
                       </span>
                     )}
                   </div>
