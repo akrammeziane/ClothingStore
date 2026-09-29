@@ -67,8 +67,8 @@ export default function Profile() {
       await dispatch(editUser({ userId, userData: formData })).unwrap();
       setIsEditing(false);
       setSuccessMsg("Profile updated successfully.");
-    } catch {
-      // error is already surfaced via `error` from the slice
+    } catch (error) {
+      console.error("Error updating profile:", error);
     }
   };
 
