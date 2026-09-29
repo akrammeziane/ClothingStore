@@ -133,7 +133,7 @@ export default function ProductsManagement() {
     message: "",
   });
   const feedbackMessage = error
-    ? `${error.message} session expired. Please login again.`
+    ? `${error.message} OR session expired. Please login again.`
     : actionFeedback.message;
 
   const feedbackType = error ? "error" : actionFeedback.type;
@@ -260,7 +260,6 @@ export default function ProductsManagement() {
     formData.append("price", productForm.price);
     formData.append("variants", JSON.stringify(productForm.variants));
     formData.append("category", productForm.category.trim());
-    formData.append("quantity", productForm.quantity);
     console.log("the formdata is ", Object.fromEntries(formData.entries()));
 
     try {
@@ -271,6 +270,8 @@ export default function ProductsManagement() {
         type: "success",
         message: "Product added successfully.",
       });
+      setImageFile(null);
+      setImagePreview(null);
       setTimeout(() => {
         setActionFeedback({ type: "", message: "" });
       }, 5000);
@@ -325,7 +326,6 @@ export default function ProductsManagement() {
     formdata.append("price", editForm.price);
     formdata.append("variants", JSON.stringify(editForm.variants));
     formdata.append("category", editForm.category.trim());
-    formdata.append("quantity", editForm.quantity);
     console.log("the formdata is ", Object.fromEntries(formdata.entries()));
     try {
       await dispatch(
@@ -1207,16 +1207,22 @@ export default function ProductsManagement() {
                   required
                   className="px-4 py-2 bg-hero border border-footer/10 rounded-lg text-footer placeholder-footer/40 focus:outline-none focus:ring-2 focus:ring-accent"
                 />
-                <input
-                  name="quantity"
-                  type="number"
-                  placeholder="Quantity"
-                  value={editForm.quantity}
-                  onChange={handleEditFormChange}
-                  min="0"
-                  required
-                  className="px-4 py-2 bg-hero border border-footer/10 rounded-lg text-footer placeholder-footer/40 focus:outline-none focus:ring-2 focus:ring-accent"
-                />
+                {/* Total Stock Auto-Calculated Readonly */}
+                <div className="flex items-center gap-3 px-4 py-2.5 bg-hero/50 border border-footer/10 rounded-lg">
+                  <Package className="w-5 h-5 text-accent shrink-0" />
+                  <div className="flex-1">
+                    <span className="text-xs text-footer/50 block leading-none">
+                      Total Stock
+                    </span>
+                    <span className="text-sm font-bold text-footer">
+                      {editForm.variants.reduce(
+                        (sum, item) => sum + (Number(item.quantity) || 0),
+                        0,
+                      )}{" "}
+                      Units
+                    </span>
+                  </div>
+                </div>
                 <textarea
                   name="description"
                   placeholder="Description (optional)"
