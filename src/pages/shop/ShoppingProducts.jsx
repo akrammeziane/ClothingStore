@@ -167,6 +167,15 @@ export default function ShoppingProducts() {
   if (isDetailView) {
     return <Outlet />;
   }
+  const handleCountColors = (product) => {
+    if (product.variants && product.variants.length > 0) {
+      const uniqueColors = new Set(
+        product.variants.map((variant) => variant.color),
+      );
+      return uniqueColors.size;
+    }
+    return 0;
+  };
 
   const FilterSections = (
     <>
@@ -396,9 +405,9 @@ export default function ShoppingProducts() {
                   {products.map((product, index) => {
                     const stockStatus =
                       product.status ||
-                      (product.quantity === 0
+                      (product.totalQuantity === 0
                         ? "Out Of Stock"
-                        : product.quantity < 10
+                        : product.totalQuantity < 10
                           ? "Low Stock"
                           : "In Stock");
 
@@ -466,9 +475,9 @@ export default function ShoppingProducts() {
                             <p className="font-heading font-bold text-footer text-lg">
                               {currency(product.price)}
                             </p>
-                            {product.availableColors?.length > 0 && (
+                            {handleCountColors(product) > 0 && (
                               <p className="text-[10px] text-footer/40 uppercase tracking-wider">
-                                {product.availableColors.length} colors
+                                {handleCountColors(product)} colors
                               </p>
                             )}
                           </div>

@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { createOrder, clearCreateOrderState } from "@/slices/ordersSlice";
 import { fetchUserById } from "@/slices/usersSlice";
+import { emptyProductsOrderedNumber } from "@/slices/productsSlice";
 
 const currency = (value) => `${Number(value || 0).toLocaleString()} DZD`;
 const FLAT_SHIPPING = 500;
@@ -36,7 +37,6 @@ export default function Checkout() {
   }, [dispatch, localSavedUser]);
 
   const { user: SavedUser } = useSelector((state) => state.users);
-  console.log("SavedUser in Checkout:", SavedUser);
   const { createLoading, createError, lastCreatedOrder } = useSelector(
     (state) => state.orders,
   );
@@ -99,10 +99,11 @@ export default function Checkout() {
 
     try {
       await dispatch(createOrder(payload)).unwrap();
+      dispatch(emptyProductsOrderedNumber());
       localStorage.removeItem("cart");
       window.dispatchEvent(new Event("cart-updated"));
-    } catch {
-      // createError from the slice will render below
+    } catch (error) {
+      console.error("Error placing order:", error);
     }
   };
 

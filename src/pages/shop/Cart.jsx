@@ -27,9 +27,6 @@ const readCart = () => {
 
 const writeCart = (cart) => {
   localStorage.setItem("cart", JSON.stringify(cart));
-  // Lets any other mounted component (e.g. a future cart badge in NavBar)
-  // know the cart changed, since localStorage events don't fire in the
-  // same tab that wrote them.
   window.dispatchEvent(new Event("cart-updated"));
 };
 

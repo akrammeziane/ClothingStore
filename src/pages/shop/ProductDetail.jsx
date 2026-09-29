@@ -44,14 +44,12 @@ export default function ProductDetail() {
   // Initialize selections once the product has loaded
   useEffect(() => {
     if (product) {
-      setSelectedSize(product.availableSizes?.[0] || "");
-      setSelectedColor(product.availableColors?.[0] || "");
       setQuantity(1);
     }
   }, [product]);
 
-  const inStock = (product?.quantity ?? 0) > 0;
-  const maxQuantity = product?.quantity ?? 1;
+  const inStock = (product?.totalQuantity ?? 0) > 0;
+  const maxQuantity = product?.totalQuantity ?? 1;
 
   const handleDecreaseQuantity = () => {
     if (quantity > 1) setQuantity((prev) => prev - 1);
@@ -74,8 +72,6 @@ export default function ProductDetail() {
       quantity,
     };
 
-    // Simple localStorage-based cart, matching the item shape Cart.jsx expects.
-    // Swap this for a cartSlice thunk if/when you add one.
     const existingCart = JSON.parse(localStorage.getItem("cart") || "[]");
     const matchIndex = existingCart.findIndex(
       (item) =>
@@ -144,9 +140,51 @@ export default function ProductDetail() {
     price,
     image,
     category,
-    availableSizes = [],
-    availableColors = [],
+    variants,
   } = product;
+
+  const availableSizes =
+    product.availableSizes?.length > 0
+      ? product.availableSizes
+      : [...new Set(variants.map((v) => v.size).filter(Boolean))];
+
+  const availableColors =
+    product.availableColors?.length > 0
+      ? product.availableColors
+      : [...new Set(variants.map((v) => v.color).filter(Boolean))];
+  const availableSizesPerColor = (color) => {
+    return [
+      ...new Set(
+        variants
+          .filter((v) => v.color === color)
+          .map((v) => v.size)
+          .filter(Boolean),
+      ),
+    ];
+  };
+  const availableColorsPerSize = (size) => {
+    return [
+      ...new Set(
+        variants
+          .filter((v) => v.size === size)
+          .map((v) => v.color)
+          .filter(Boolean),
+      ),
+    ];
+  };
+  console.log("the product is", product);
+  console.log("the total quantity is", product.totalQuantity);
+
+  const checkColorSizeCombination = (color, size) => {
+    return size && !availableColorsPerSize(size).includes(color);
+  };
+  const checkSizeColorCombination = (size, color) => {
+    return color && !availableSizesPerColor(color).includes(size);
+  };
+  const countAvailableQuantity = (color, size) => {
+    const variant = variants.find((v) => v.color === color && v.size === size);
+    return variant ? variant.quantity : 0;
+  };
 
   return (
     <div className="bg-primary min-h-screen py-10 lg:py-16 font-body text-footer">
@@ -241,12 +279,24 @@ export default function ProductDetail() {
                       <button
                         key={color}
                         type="button"
-                        onClick={() => setSelectedColor(color)}
-                        className={`px-4 py-2.5 text-xs font-bold uppercase tracking-wider border transition-all ${
+                        onClick={() =>
                           selectedColor === color
-                            ? "border-footer bg-footer text-primary"
-                            : "border-black/10 bg-white text-footer hover:border-black/40"
-                        }`}
+                            ? setSelectedColor(null)
+                            : setSelectedColor(color)
+                        }
+                        className={
+                          checkColorSizeCombination(color, selectedSize)
+                            ? "px-4 py-2.5 text-xs font-bold uppercase tracking-wider border transition-all bg-gray-100 text-gray-400 border-gray-200"
+                            : `px-4 py-2.5 text-xs font-bold uppercase tracking-wider border transition-all ${
+                                selectedColor === color
+                                  ? "border-footer bg-footer text-primary"
+                                  : "border-black/10 bg-white text-footer hover:border-black/40"
+                              }`
+                        }
+                        disabled={checkColorSizeCombination(
+                          color,
+                          selectedSize,
+                        )}
                       >
                         {color}
                       </button>
@@ -266,12 +316,24 @@ export default function ProductDetail() {
                       <button
                         key={size}
                         type="button"
-                        onClick={() => setSelectedSize(size)}
-                        className={`py-3.5 border text-center text-xs font-bold uppercase tracking-wider transition-all ${
+                        onClick={() =>
                           selectedSize === size
-                            ? "border-footer bg-footer text-primary"
-                            : "border-black/10 bg-white text-footer hover:border-black/40"
-                        }`}
+                            ? setSelectedSize(null)
+                            : setSelectedSize(size)
+                        }
+                        className={
+                          checkSizeColorCombination(size, selectedColor)
+                            ? "py-3.5 border text-center text-xs font-bold uppercase tracking-wider transition-all bg-gray-100 text-gray-400 border-gray-200"
+                            : `py-3.5 border text-center text-xs font-bold uppercase tracking-wider transition-all ${
+                                selectedSize === size
+                                  ? "border-footer bg-footer text-primary"
+                                  : "border-black/10 bg-white text-footer hover:border-black/40"
+                              }`
+                        }
+                        disabled={checkSizeColorCombination(
+                          size,
+                          selectedColor,
+                        )}
                       >
                         {size}
                       </button>
@@ -291,7 +353,10 @@ export default function ProductDetail() {
                   </label>
                   {inStock && (
                     <span className="text-[10px] text-footer/50">
-                      {maxQuantity} available
+                      {selectedSize && selectedColor
+                        ? countAvailableQuantity(selectedColor, selectedSize)
+                        : maxQuantity}{" "}
+                      available
                     </span>
                   )}
                 </div>
@@ -328,11 +393,18 @@ export default function ProductDetail() {
                   <button
                     type="button"
                     onClick={handleAddToCart}
-                    disabled={!inStock || !selectedSize || !selectedColor}
+                    disabled={
+                      !inStock ||
+                      !selectedSize ||
+                      !selectedColor ||
+                      countAvailableQuantity(selectedColor, selectedSize) <= 0
+                    }
                     className="w-full bg-accent text-footer py-4 px-8 font-heading text-xs font-bold uppercase tracking-[0.2em] transition hover:bg-footer hover:text-primary flex items-center justify-center gap-3 group disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-accent disabled:hover:text-footer"
                   >
                     <ShoppingBag className="w-4 h-4" />
-                    {inStock ? "Add to Cart" : "Sold Out"}
+                    {countAvailableQuantity(selectedColor, selectedSize) > 0
+                      ? "Add to Cart"
+                      : "Sold Out"}
                   </button>
                 </div>
               </div>

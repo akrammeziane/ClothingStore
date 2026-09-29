@@ -133,6 +133,9 @@ const productsSlice = createSlice({
         state.productsOrderedNumber -= 1;
       }
     },
+    emptyProductsOrderedNumber: (state) => {
+      state.productsOrderedNumber = 0;
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -240,5 +243,6 @@ export const {
   setCurrentPage,
   incrementProductsOrderedNumber,
   decrementProductsOrderedNumber,
+  emptyProductsOrderedNumber,
 } = productsSlice.actions;
 export default productsSlice.reducer;
