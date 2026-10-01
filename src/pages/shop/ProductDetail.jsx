@@ -185,6 +185,13 @@ export default function ProductDetail() {
     const variant = variants.find((v) => v.color === color && v.size === size);
     return variant ? variant.quantity : 0;
   };
+  const availableQty =
+    selectedSize && selectedColor
+      ? countAvailableQuantity(selectedColor, selectedSize)
+      : maxQuantity;
+
+  const isLowStock = availableQty > 0 && availableQty <= 5;
+  const isOutOfStock = availableQty <= 0;
 
   return (
     <div className="bg-primary min-h-screen py-10 lg:py-16 font-body text-footer">
@@ -351,14 +358,21 @@ export default function ProductDetail() {
                   >
                     Quantity
                   </label>
-                  {inStock && (
-                    <span className="text-[10px] text-footer/50">
-                      {selectedSize && selectedColor
-                        ? countAvailableQuantity(selectedColor, selectedSize)
-                        : maxQuantity}{" "}
-                      available
-                    </span>
-                  )}
+                  <span
+                    className={`text-[10px] ${
+                      isOutOfStock
+                        ? "text-red-500 font-medium"
+                        : isLowStock
+                          ? "text-amber-600 font-medium"
+                          : "text-footer/50"
+                    }`}
+                  >
+                    {isOutOfStock
+                      ? "Out of stock"
+                      : isLowStock
+                        ? `Only ${availableQty} left in stock`
+                        : "In stock"}
+                  </span>
                 </div>
                 <div className="flex flex-col sm:flex-row gap-4">
                   {/* Quantity Input Controls */}
