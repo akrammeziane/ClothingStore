@@ -125,17 +125,6 @@ export default function Shipping() {
           ))}
         </ol>
       </section>
-
-      <p className="mt-10 text-sm text-footer/70">
-        Already ordered?{" "}
-        <Link
-          to="/track-order"
-          className="font-bold text-accent underline underline-offset-4"
-        >
-          Track your order
-        </Link>
-        .
-      </p>
     </Supportlayout>
   );
 }
