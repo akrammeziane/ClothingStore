@@ -1,8 +1,9 @@
-import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { ArrowUpRight, HeartHandshake, Shield } from "lucide-react";
 import aboutImage from "../../assets/aboutImage.jpg";
 
 export default function AboutSection() {
+  const navigate = useNavigate();
   return (
     <section
       id="about"
@@ -75,20 +76,17 @@ export default function AboutSection() {
 
             {/* CTA Group */}
             <div className="pt-6 flex flex-wrap items-center gap-4">
-              <Link
-                to="/about"
+              <button
+                onClick={() =>
+                  navigate("/shop", {
+                    state: { searchTerm: "TalQin" },
+                  })
+                }
                 className="bg-footer text-primary px-8 py-4 text-xs font-bold uppercase tracking-[0.2em] transition hover:bg-accent hover:text-footer flex items-center gap-2 group"
               >
-                Our Brand Mission
-                <ArrowUpRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
-              </Link>
-
-              <Link
-                to="/shop"
-                className="border border-black px-8 py-4 text-xs font-bold uppercase tracking-[0.2em] text-footer hover:bg-black hover:text-primary transition"
-              >
                 View Collection
-              </Link>
+                <ArrowUpRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+              </button>
             </div>
           </div>
         </div>

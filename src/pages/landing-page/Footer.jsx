@@ -28,7 +28,7 @@ export default function Footer() {
             <li
               onClick={() =>
                 navigate("/shop", {
-                  state: { category: "Hoodies", redirect: true },
+                  state: { category: "Hoodies" },
                 })
               }
               className="cursor-pointer hover:text-accent transition"
@@ -38,7 +38,7 @@ export default function Footer() {
             <li
               onClick={() =>
                 navigate("/shop", {
-                  state: { category: "T-shirts", redirect: true },
+                  state: { category: "T-shirts" },
                 })
               }
               className="cursor-pointer hover:text-accent transition"
@@ -48,7 +48,7 @@ export default function Footer() {
             <li
               onClick={() =>
                 navigate("/shop", {
-                  state: { category: "Pants", redirect: true },
+                  state: { category: "Pants" },
                 })
               }
               className="cursor-pointer hover:text-accent transition"
@@ -58,7 +58,7 @@ export default function Footer() {
             <li
               onClick={() =>
                 navigate("/shop", {
-                  state: { category: "Jackets", redirect: true },
+                  state: { category: "Jackets" },
                 })
               }
               className="cursor-pointer hover:text-accent transition"
@@ -68,7 +68,7 @@ export default function Footer() {
             <li
               onClick={() =>
                 navigate("/shop", {
-                  state: { category: "Accessories", redirect: true },
+                  state: { category: "Accessories" },
                 })
               }
               className="cursor-pointer hover:text-accent transition"
@@ -83,12 +83,36 @@ export default function Footer() {
             Customer Care
           </h4>
           <ul className="mt-4 space-y-2 text-sm text-primary/75">
-            <li>Contact us</li>
-            <li>Shipping &amp; Delivery</li>
-            <li>Returns</li>
-            <li>Size Guide</li>
-            <li>Track Order</li>
-            <li>FAQ</li>
+            <li
+              onClick={() => navigate("/contact")}
+              className="cursor-pointer hover:text-accent transition"
+            >
+              Contact us
+            </li>
+            <li
+              onClick={() => navigate("/shipping")}
+              className="cursor-pointer hover:text-accent transition"
+            >
+              Shipping &amp; Delivery
+            </li>
+            <li
+              onClick={() => navigate("/returns")}
+              className="cursor-pointer hover:text-accent transition"
+            >
+              Returns
+            </li>
+            <li
+              onClick={() => navigate("/size-guide")}
+              className="cursor-pointer hover:text-accent transition"
+            >
+              Size Guide
+            </li>
+            <li
+              onClick={() => navigate("/FAQ")}
+              className="cursor-pointer hover:text-accent transition"
+            >
+              FAQ
+            </li>
           </ul>
         </div>
 
@@ -97,11 +121,12 @@ export default function Footer() {
             Company
           </h4>
           <ul className="mt-4 space-y-2 text-sm text-primary/75">
-            <li>About us</li>
-            <li>Our story</li>
-            <li>Careers</li>
-            <li>Wholesale</li>
-            <li>Privacy</li>
+            <li
+              onClick={() => navigate("/#about")}
+              className="cursor-pointer hover:text-accent transition"
+            >
+              About us
+            </li>
           </ul>
         </div>
       </div>
@@ -110,9 +135,7 @@ export default function Footer() {
         <div className="mx-auto flex max-w-[1400px] flex-col items-center justify-between gap-3 px-4 py-4 text-xs uppercase tracking-[0.15em] text-primary/70 sm:flex-row sm:px-6 lg:px-8">
           <p>© 2026 Talqin. All rights reserved.</p>
           <div className="flex gap-4">
-            <span>Visa</span>
-            <span>Mastercard</span>
-            <span>PayPal</span>
+            <span>Cash On Delivery</span>
           </div>
         </div>
       </div>

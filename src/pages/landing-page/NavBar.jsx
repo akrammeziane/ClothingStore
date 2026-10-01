@@ -58,7 +58,7 @@ export default function NavBar() {
       <div className="mx-auto flex max-w-[1400px] items-center justify-between gap-4 px-4 py-4 sm:px-6 lg:px-8">
         <div className="flex items-center gap-3">
           <Link to="/">
-            <h1 className="font-heading text-3xl font-bold uppercase tracking-tight text-footer sm:text-4xl">
+            <h1 className="font-heading text-3xl font-bold uppercase tracking-tight text-footer sm:text-4xl cursor-pointer">
               Talqin
             </h1>
           </Link>
@@ -66,7 +66,7 @@ export default function NavBar() {
 
         <nav className="hidden items-center gap-8 lg:flex">
           <button
-            className="text-sm font-medium uppercase tracking-[0.12em] text-footer"
+            className="text-sm font-medium uppercase tracking-[0.12em] text-footer cursor-pointer"
             onClick={() => navigate("/")}
           >
             Home
@@ -76,7 +76,7 @@ export default function NavBar() {
               <button
                 type="button"
                 onClick={() => navigate("/shop")}
-                className="flex items-center gap-1 text-sm font-medium uppercase tracking-[0.12em] text-footer"
+                className="cursor-pointer flex items-center gap-1 text-sm font-medium uppercase tracking-[0.12em] text-footer"
               >
                 Shop
                 <ChevronDown size={15} />
@@ -87,7 +87,7 @@ export default function NavBar() {
               <button
                 type="button"
                 onClick={() => setShopOpen((prev) => !prev)}
-                className="flex items-center gap-1 text-sm font-medium uppercase tracking-[0.12em] text-footer"
+                className="cursor-pointer flex items-center gap-1 text-sm font-medium uppercase tracking-[0.12em] text-footer"
               >
                 Shop
                 <ChevronDown size={15} />
@@ -102,10 +102,10 @@ export default function NavBar() {
                       onClick={() => {
                         setShopOpen(false);
                         navigate("/shop", {
-                          state: { category: item, redirect: true },
+                          state: { category: item },
                         });
                       }}
-                      className="block w-full border-b border-black/5 px-4 py-3 text-left text-sm uppercase tracking-[0.14em] text-footer transition hover:bg-black/5 last:border-b-0"
+                      className="cursor-pointer block w-full border-b border-black/5 px-4 py-3 text-left text-sm uppercase tracking-[0.14em] text-footer transition hover:bg-black/5 last:border-b-0"
                     >
                       {item}
                     </button>
@@ -116,26 +116,26 @@ export default function NavBar() {
           )}
 
           <button
-            className="text-sm font-medium uppercase tracking-[0.12em] text-footer"
+            className="cursor-pointer text-sm font-medium uppercase tracking-[0.12em] text-footer"
             onClick={() => navigate("/#new-arrivals")}
           >
             New arrivals
           </button>
 
           <button
-            className="text-sm font-medium uppercase tracking-[0.12em] text-footer"
+            className="cursor-pointer text-sm font-medium uppercase tracking-[0.12em] text-footer"
             onClick={() => navigate("/#collections")}
           >
             Collections
           </button>
           <button
-            className="text-sm font-medium uppercase tracking-[0.12em] text-footer"
+            className="cursor-pointer text-sm font-medium uppercase tracking-[0.12em] text-footer"
             onClick={() => navigate("/#promo")}
           >
             Sale
           </button>
           <button
-            className="text-sm font-medium uppercase tracking-[0.12em] text-footer"
+            className="cursor-pointer text-sm font-medium uppercase tracking-[0.12em] text-footer"
             onClick={() => navigate("/#about")}
           >
             About us
@@ -295,7 +295,7 @@ export default function NavBar() {
                       onClick={() => {
                         setShopOpen(false);
                         navigate("/shop", {
-                          state: { category: item, redirect: true },
+                          state: { category: item },
                         });
                       }}
                       className="text-left text-sm uppercase tracking-[0.12em] text-footer/80"

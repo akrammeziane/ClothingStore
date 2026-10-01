@@ -59,11 +59,10 @@ export default function CategorySection() {
                 {title}
               </p>
               <button
-                className="mt-3 inline-flex items-center border border-primary/60 px-3 py-2 text-[10px] font-medium uppercase tracking-[0.2em] text-primary transition hover:bg-primary hover:text-footer"
+                className="cursor-pointer mt-3 inline-flex items-center border border-primary/60 px-3 py-2 text-[10px] font-medium uppercase tracking-[0.2em] text-primary transition hover:bg-primary hover:text-footer"
                 onClick={() =>
                   navigate(`/shop`, {
                     state: { category: title },
-                    replace: true,
                   })
                 }
               >

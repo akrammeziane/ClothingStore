@@ -16,7 +16,7 @@ export default function PromoSection() {
           </h3>
         </div>
         <Link to="/shop">
-          <button className="mt-4 inline-flex w-fit items-center justify-center bg-accent px-4 py-2.5 text-[9px] font-bold uppercase tracking-[0.2em] text-primary transition hover:opacity-90 sm:text-[10px]">
+          <button className="cursor-pointer mt-4 inline-flex w-fit items-center justify-center bg-accent px-4 py-2.5 text-[9px] font-bold uppercase tracking-[0.2em] text-primary transition hover:opacity-90 sm:text-[10px]">
             Shop now
           </button>
         </Link>
@@ -33,7 +33,7 @@ export default function PromoSection() {
         </div>
 
         <button
-          className="mt-4 inline-flex w-fit items-center justify-center bg-white px-4 py-2.5 text-[9px] font-bold uppercase tracking-[0.2em] text-[#1a1a1a] transition hover:opacity-80 sm:text-[10px]"
+          className="cursor-pointer mt-4 inline-flex w-fit items-center justify-center bg-white px-4 py-2.5 text-[9px] font-bold uppercase tracking-[0.2em] text-[#1a1a1a] transition hover:opacity-80 sm:text-[10px]"
           onClick={() => navigate("/shop", { state: { category: "Hoodies" } })}
         >
           Explore
@@ -49,7 +49,7 @@ export default function PromoSection() {
           </h3>
         </div>
         <Link to="/login">
-          <button className="mt-4 inline-flex w-fit items-center justify-center bg-emerald-400 px-4 py-2.5 text-[9px] font-bold uppercase tracking-[0.2em] text-[#1a3a35] transition hover:bg-emerald-300 sm:text-[10px]">
+          <button className="cursor-pointer mt-4 inline-flex w-fit items-center justify-center bg-emerald-400 px-4 py-2.5 text-[9px] font-bold uppercase tracking-[0.2em] text-[#1a3a35] transition hover:bg-emerald-300 sm:text-[10px]">
             Join now
           </button>
         </Link>
