@@ -46,7 +46,6 @@ export default function Checkout() {
   useEffect(() => {
     setOrderItems(readCart());
     dispatch(clearCreateOrderState());
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const [formData, setFormData] = useState({

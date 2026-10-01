@@ -8,7 +8,8 @@ export default function MainLayout() {
   const { hash } = useLocation();
   useEffect(() => {
     if (hash) {
-      const elementId = hash.replace("#", "");
+      const hashTokenized = hash.split("#");
+      const elementId = hashTokenized[hashTokenized.length - 1];
       const element = document.getElementById(elementId);
       if (element) {
         element.scrollIntoView({ behavior: "smooth" });

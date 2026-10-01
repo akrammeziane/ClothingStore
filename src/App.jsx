@@ -23,6 +23,11 @@ import AccountLayout from "./pages/client/AccountLayout";
 import MyOrders from "./pages/client/MyOrders";
 import Profile from "./pages/client/Profile";
 import Settings from "./pages/client/Settings";
+import Sizeguide from "./pages/customer-care/Sizeguide";
+import Faq from "./pages/customer-care/Faq";
+import Contact from "./pages/customer-care/Contact";
+import Returns from "./pages/customer-care/Returns";
+import Shipping from "./pages/customer-care/Shipping";
 
 function App() {
   const router = createBrowserRouter([
@@ -39,6 +44,11 @@ function App() {
         },
         { path: "checkout", element: <Checkout /> },
         { path: "cart", element: <Cart /> },
+        { path: "size-guide", element: <Sizeguide /> },
+        { path: "FAQ", element: <Faq /> },
+        { path: "contact", element: <Contact /> },
+        { path: "returns", element: <Returns /> },
+        { path: "shipping", element: <Shipping /> },
       ],
     },
     { path: "login", element: <Login /> },

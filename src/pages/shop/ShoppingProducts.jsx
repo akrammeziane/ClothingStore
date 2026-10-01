@@ -44,6 +44,7 @@ export default function ShoppingProducts() {
   const dispatch = useDispatch();
   const location = useLocation();
   const categorieFromState = location.state?.category || "";
+  const searchTermFromState = location.state?.searchTerm || "";
 
   const initialFilters = {
     category: categorieFromState,
@@ -54,15 +55,14 @@ export default function ShoppingProducts() {
     maxPrice: "",
   };
   useEffect(() => {
-    if (categorieFromState) {
+    if (categorieFromState || searchTermFromState) {
       navigate(".", { replace: true, state: null });
     }
-  }, [categorieFromState, navigate]);
+  }, [categorieFromState, searchTermFromState, navigate]);
 
-  // When on /shop/:productId, only render the nested ProductDetail view
   const isDetailView = /^\/shop\/[^/]+$/.test(location.pathname);
 
-  const [searchTerm, setSearchTerm] = useState("");
+  const [searchTerm, setSearchTerm] = useState(searchTermFromState || "");
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [filters, setFilters] = useState(initialFilters);
   const [debouncedPrice, setDebouncedPrice] = useState({
