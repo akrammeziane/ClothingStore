@@ -313,10 +313,16 @@ export default function NavBar() {
             >
               New arrivals
             </button>
-            <button className="text-left text-sm font-medium uppercase tracking-[0.12em] text-footer">
+            <button
+              onClick={() => navigate("/#collections")}
+              className="text-left text-sm font-medium uppercase tracking-[0.12em] text-footer"
+            >
               Collections
             </button>
-            <button className="text-left text-sm font-medium uppercase tracking-[0.12em] text-footer">
+            <button
+              onClick={() => navigate("/#promo")}
+              className="text-left text-sm font-medium uppercase tracking-[0.12em] text-footer"
+            >
               Sale
             </button>
             <button
