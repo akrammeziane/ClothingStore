@@ -17,10 +17,16 @@ import {
   X,
   Filter,
   Loader2,
+  Edit2,
 } from "lucide-react";
 import { useState, useEffect, useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { fetchUsers, deleteUser, setCurrentPage } from "@/slices/usersSlice";
+import {
+  fetchUsers,
+  deleteUser,
+  setCurrentPage,
+  editUser,
+} from "@/slices/usersSlice";
 
 export default function UsersManagement() {
   const dispatch = useDispatch();
@@ -63,6 +69,8 @@ export default function UsersManagement() {
 
   const { users, loading } = useSelector((state) => state.users);
   const [selectedUser, setSelectedUser] = useState(null);
+  const [userRole, setUserRole] = useState(null);
+  const [editingUser, setEditingUser] = useState(null);
   const [actionFeedback, setActionFeedback] = useState({
     type: "",
     message: "",
@@ -90,6 +98,11 @@ export default function UsersManagement() {
     });
   }, [users, Debounced, roleFilter]);
 
+  const handleOpenEdit = (user) => {
+    setEditingUser(user);
+    setUserRole(user.isAdmin ? "admin" : "customer");
+  };
+
   const handleDelete = async (id) => {
     setActionFeedback({ type: "", message: "" });
     try {
@@ -112,7 +125,34 @@ export default function UsersManagement() {
       }, 5000);
     }
   };
-
+  const handleSaveRole = async () => {
+    if (!editingUser) return;
+    setActionFeedback({ type: "", message: "" });
+    try {
+      await dispatch(
+        editUser({
+          userId: editingUser._id,
+          userData: { isAdmin: userRole === "admin" ? true : false },
+        }),
+      ).unwrap();
+      setActionFeedback({
+        type: "success",
+        message: "User role updated successfully.",
+      });
+      setEditingUser(null);
+      setTimeout(() => {
+        setActionFeedback({ type: "", message: "" });
+      }, 5000);
+    } catch (error) {
+      setActionFeedback({
+        type: "error",
+        message: error.message || "Failed to update user role.",
+      });
+      setTimeout(() => {
+        setActionFeedback({ type: "", message: "" });
+      }, 5000);
+    }
+  };
   const formatDate = (dateString) => {
     if (!dateString) return "N/A";
     return new Date(dateString).toLocaleDateString("en-US", {
@@ -328,6 +368,13 @@ export default function UsersManagement() {
                           <Eye className="w-4 h-4" />
                         </button>
                         <button
+                          onClick={() => handleOpenEdit(user)}
+                          className="p-2 hover:bg-hero rounded-lg transition-colors text-footer/60 hover:text-accent"
+                          title="Edit Order Status"
+                        >
+                          <Edit2 className="w-4 h-4" />
+                        </button>
+                        <button
                           onClick={() => handleDelete(user._id)}
                           className="p-2 hover:bg-red-500/10 rounded-lg transition-colors text-footer/60 hover:text-red-600"
                           title="Delete User"
@@ -472,6 +519,80 @@ export default function UsersManagement() {
                 className="px-4 py-2 bg-red-600 text-white rounded-lg text-xs font-semibold hover:bg-red-700 transition-colors shadow-sm"
               >
                 Delete Account
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      {/* Edit User Roles */}
+      {editingUser && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-primary border border-footer/10 rounded-2xl max-w-md w-full shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+            {/* Modal Header */}
+            <div className="px-6 py-4 border-b border-footer/10 flex items-center justify-between bg-hero/30">
+              <div>
+                <h3 className="text-lg font-bold text-footer">
+                  Edit User Roles
+                </h3>
+                <p className="text-xs font-mono text-accent">
+                  User ID: {editingUser._id}
+                </p>
+              </div>
+              <button
+                onClick={() => setEditingUser(null)}
+                className="p-1.5 text-footer/60 hover:text-footer rounded-lg transition-colors hover:bg-hero"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Modal Content */}
+            <div className="p-6 space-y-4">
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold uppercase tracking-wider text-footer/60">
+                  Select User Role
+                </label>
+                <select
+                  value={userRole}
+                  onChange={(e) => setUserRole(e.target.value)}
+                  className="w-full h-10 px-3 text-sm bg-hero border border-footer/10 rounded-lg text-footer focus:outline-none focus:ring-2 focus:ring-accent cursor-pointer transition-all"
+                >
+                  <option value="customer">customer</option>
+                  <option value="admin">admin</option>
+                </select>
+              </div>
+
+              <div className="p-3 bg-hero/40 rounded-xl border border-footer/5 text-xs text-footer/60 space-y-1">
+                <p>
+                  <b>Customer:</b> {editingUser.name}
+                </p>
+                <p>
+                  <b>Role:</b> {userRole}
+                </p>
+                <p>
+                  <b>Products Ordered : </b> $
+                  {editingUser.productsOrdered?.length || 0}
+                </p>
+                <p>
+                  <b>Products Bought : </b> $
+                  {editingUser.productsBought?.length || 0}
+                </p>
+              </div>
+            </div>
+
+            {/* Modal Actions */}
+            <div className="px-6 py-4 border-t border-footer/10 bg-hero/30 flex justify-end gap-2.5">
+              <button
+                onClick={() => setEditingUser(null)}
+                className="px-4 py-2 bg-hero text-footer rounded-lg text-xs font-semibold hover:bg-footer/10 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleSaveRole}
+                className="px-4 py-2 bg-accent text-white rounded-lg text-xs font-semibold hover:bg-accent/90 transition-colors shadow-sm"
+              >
+                Save Changes
               </button>
             </div>
           </div>
