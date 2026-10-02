@@ -55,13 +55,28 @@ export const editUser = createAsyncThunk(
   "users/editUser",
   async ({ userId, userData }, { rejectWithValue }) => {
     try {
-      const response = await API.put(`/users/${userId}/role`, userData);
+      const response = await API.put(`/users/${userId}`, userData);
       return response.data;
     } catch (error) {
       const errorMessage =
         error.response?.data?.message ||
         error.message ||
         "Failed to update user";
+      return rejectWithValue(errorMessage);
+    }
+  },
+);
+export const editUserRole = createAsyncThunk(
+  "users/editUserRole",
+  async ({ userId, isAdmin }, { rejectWithValue }) => {
+    try {
+      const response = await API.put(`/users/${userId}/role`, { isAdmin });
+      return response.data;
+    } catch (error) {
+      const errorMessage =
+        error.response?.data?.message ||
+        error.message ||
+        "Failed to update user role";
       return rejectWithValue(errorMessage);
     }
   },
@@ -171,6 +186,18 @@ const usersSlice = createSlice({
         state.user = action.payload;
       })
       .addCase(editUser.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+      .addCase(editUserRole.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(editUserRole.fulfilled, (state, action) => {
+        state.loading = false;
+        state.user = action.payload;
+      })
+      .addCase(editUserRole.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       })

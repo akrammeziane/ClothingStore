@@ -25,7 +25,7 @@ import {
   fetchUsers,
   deleteUser,
   setCurrentPage,
-  editUser,
+  editUserRole,
 } from "@/slices/usersSlice";
 
 export default function UsersManagement() {
@@ -130,9 +130,9 @@ export default function UsersManagement() {
     setActionFeedback({ type: "", message: "" });
     try {
       await dispatch(
-        editUser({
+        editUserRole({
           userId: editingUser._id,
-          userData: { isAdmin: userRole === "admin" ? true : false },
+          isAdmin: userRole === "admin" ? true : false,
         }),
       ).unwrap();
       setActionFeedback({
