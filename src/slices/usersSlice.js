@@ -55,7 +55,7 @@ export const editUser = createAsyncThunk(
   "users/editUser",
   async ({ userId, userData }, { rejectWithValue }) => {
     try {
-      const response = await API.put(`/users/${userId}`, userData);
+      const response = await API.put(`/users/${userId}/role`, userData);
       return response.data;
     } catch (error) {
       const errorMessage =
