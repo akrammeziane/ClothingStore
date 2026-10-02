@@ -570,11 +570,11 @@ export default function UsersManagement() {
                   <b>Role:</b> {userRole}
                 </p>
                 <p>
-                  <b>Products Ordered : </b> $
+                  <b>Products Ordered : </b>
                   {editingUser.productsOrdered?.length || 0}
                 </p>
                 <p>
-                  <b>Products Bought : </b> $
+                  <b>Products Bought : </b>
                   {editingUser.productsBought?.length || 0}
                 </p>
               </div>
